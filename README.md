@@ -1,6 +1,6 @@
-# How to use Harbor with Minio?
+# How to use VMware Harbor with Minio?
 
-Project [Harbor](https://github.com/vmware/harbor) is an enterprise-class docker registry server to store and distribute container images. Follow this document to use Minio object storage server as a storage backend for Harbor container registry.
+[Harbor](https://github.com/vmware/harbor) is an enterprise-class docker registry server to store and distribute container images. Follow this document to use Minio object storage server as a storage backend for Harbor container registry.
 
 ## Prerequesites
 
