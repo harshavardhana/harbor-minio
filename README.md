@@ -4,59 +4,49 @@
 
 ## Prerequesites
 
-- Install and run [Minio server](https://github.com/minio/minio#docker-container)
+- Install and run [Minio server](https://github.com/minio/minio#stable)
 
 ```sh
-docker run -p 9000:9000 --name minio \
-  -e "MINIO_ACCESS_KEY=minio" \
-  -e "MINIO_SECRET_KEY=minio123" \
-  -v /mnt/minio/export:/export \
-  -v /mnt/minio/config:/root/.minio \
-  minio/minio:RELEASE.2017-02-16T01-47-30Z server /export
+podman run \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  minio/minio server /data{1...4} --console-address ":9001"
 ```
 
 - Install Harbor registry
 
-The binary of the installer can be downloaded from the [release](https://github.com/vmware/harbor/releases) page. Follow [harbor installation and configuration guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md) for further instructions.
+The binary of the installer can be downloaded from the [releases](https://github.com/goharbor/harbor/releases) page. Follow [harbor installation and configuration guide](https://goharbor.io/docs/2.3.0/install-config/) for further instructions.
 
-### Edit `config.yml` 
+### Edit `harbor.yml`
 
-Add the `s3` configuration to the storage section in your `common/templates/registry/config.yml` (right below the cache configuration). Here is a complete example [`config.yml`](./config.yml) for your reference.
+Add the `s3` configuration to the storage_service section in your `harbor/harbor.yml`.
 
 ```yml
-storage:
-    s3:
-      accesskey: minio
-      secretkey: minio123
-      region: us-east-1
-      regionendpoint: http://YOUR-MINIO-IP:9000
-      bucket: docker-registry
-      encrypt: false
-      secure: false
-      v4auth: true
-      chunksize: 5242880
-      rootdirectory: /
+storage_service:
+  s3:
+    accesskey: minio
+    secretkey: minio123
+    region: us-east-1
+    regionendpoint: http://minio-endpoint:9000
+    bucket: harbor
+    secure: false
+    v4auth: true
 ```
 
 ### Start Harbor registry
 
 ```sh
-./install.sh
-[Step 1]: preparing environment ...
-loaded secret key
-...
-...
+sudo ./install.sh
+Creating harbor-jobservice ... done
+Creating nginx             ... done
 ✔ ----Harbor has been installed and started successfully.----
-
-Now you should be able to visit the admin portal at https://172.23.0.7. 
-For more details, please visit https://github.com/vmware/harbor .
 ```
 
 Note that the default administrator username/password are `admin/Harbor12345`.
 
 ### Create a custom project
 
-Visit <https://172.23.0.7> and login to create a project name `myproject`
+Visit <http://reg.example.com> and login to create a project name `myproject`
 
 ![HARBOR_PROJECT](https://github.com/harshavardhana/harbor-minio/blob/master/project.png?raw=true)
 
@@ -65,20 +55,20 @@ Visit <https://172.23.0.7> and login to create a project name `myproject`
 Login to the harbor registry before attempting to push your first image.
 
 ```sh
-docker login 172.23.0.7
+docker login reg.example.com
 Username: admin
 Password: Harbor12345
 Login Succeeded
 ```
 
-Proceed to push your first image to the harbor registry. 
+Proceed to push your first image to the harbor registry.
 
 ```sh
-docker tag ubuntu 172.23.0.7/myproject/myrepo
-docker push 172.23.0.7/myproject/myrepo
-The push refers to a repository [172.23.0.7/myproject/myrepo]
-5eb5bd4c5014: Pushed 
-d195a7a18c70: Pushed 
+docker tag ubuntu reg.example.com/myproject/myrepo
+docker push reg.example.com/myproject/myrepo
+The push refers to a repository [reg.example.com/myproject/myrepo]
+5eb5bd4c5014: Pushed
+d195a7a18c70: Pushed
 ...
 ```
 
